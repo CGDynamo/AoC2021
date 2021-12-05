@@ -105,7 +105,6 @@ void FillMap(const std::vector<std::pair<Point2, Point2>>& inputs, int* map, con
 		}
 		else if (abs(pair.first.x - pair.second.x) == abs(pair.first.y - pair.second.y) && part2)
 		{
-			std::cout << "(" << pair.first.x << ", " << pair.first.y << ") - (" << pair.second.x << ", " << pair.second.y << ")" << abs(pair.first.x - pair.second.x) << " | " << abs(pair.first.y - pair.second.y) << '\n';
 			int signX = (pair.first.x - pair.second.x < 0)? 1 : -1,
 				signY = (pair.first.y - pair.second.y < 0)? 1 : -1;
 				
