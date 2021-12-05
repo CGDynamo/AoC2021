@@ -105,6 +105,7 @@ bool Bingo(Card* card)
 
 Card* FindFirstWinner(const std::vector<char>& calls, std::vector<Card*> cards)
 {
+	int counter = cards.size();
 	for(char call : calls)
 		for(int c = 0; c < cards.size(); c++)
 		{
@@ -115,6 +116,8 @@ Card* FindFirstWinner(const std::vector<char>& calls, std::vector<Card*> cards)
 			
 			if(Bingo(cards[c]))
 			{
+				if (cards.size() == counter)
+					std::cout << "part 1 BINGO! " << CalculateScore(cards[c], call) << '\n';
 				if (cards.size() > 1)
 				{
 					cards.erase(cards.begin() + c);
@@ -122,7 +125,7 @@ Card* FindFirstWinner(const std::vector<char>& calls, std::vector<Card*> cards)
 				}
 				else
 				{
-					std::cout << "BINGO!" << CalculateScore(cards[c], call) << '\n';
+					std::cout << "part 2 BINGO! " << CalculateScore(cards[c], call) << '\n';
 					return cards[c];
 				}
 			}
