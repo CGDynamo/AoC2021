@@ -11,18 +11,17 @@ struct Card
 };
 
 std::vector<char> ParseCalls();
-std::vector<Card> ParseCards();
-Card FindFirstWinner(const std::vector<Card>& cards);
-int CalculateScore(const Card& card, const char& call);
+std::vector<Card*> ParseCards();
+Card* FindFirstWinner(const std::vector<char>& calls, std::vector<Card*> cards);
+int CalculateScore(Card* card, const char& call);
 
 
 main()
 {
 	std::vector<char> calls = ParseCalls();
-	std::vector<Card> cards = ParseCards();
+	std::vector<Card*> cards = ParseCards();
 		
-	for(int c = 0; c < cards.size(); c++)
-		std::cout << (int)cards.at(c).points[0][0] << " | "<< (int)cards.at(c).points[4][4] << '\n';
+	FindFirstWinner(calls, cards);
 	
 }
 
@@ -52,14 +51,14 @@ std::vector<char> ParseCalls()
 	return calls;
 }
 
-std::vector<Card> ParseCards()
+std::vector<Card*> ParseCards()
 {
-	std::vector<Card> cards = std::vector<Card>();
+	std::vector<Card*> cards = std::vector<Card*>();
 	
 	std::ifstream file("input.txt", std::ios::in);
 	
     int counter = -1;	
-	Card card = Card();
+	Card* card = new Card();
 	
 	for(std::string line; std::getline(file, line);)
 	{
@@ -69,29 +68,76 @@ std::vector<Card> ParseCards()
 			for(int x = 0; x < 5; x++)
 			{
 				std::string stringlette = line.substr(x*3,3);
-				std::remove(stringlette.begin(), stringlette.end(), ' ');
-				card.points[y - 1][x] = std::stoi(stringlette);
-				card.marked[y - 1][x] = false;
+				card->points[y - 1][x] = std::stoi(stringlette);
+				card->marked[y - 1][x] = false;
 			}
 		}
 		else if (counter > 0 && counter % 6 == 0)
 		{
 			cards.push_back(card);
+			card = new Card();
 		}
 		counter ++;
 	}
+	cards.push_back(card);
 	return cards;
 }
 
-Card FindFirstWinner(const std::vector<Card>& cards)
+bool Bingo(Card* card)
 {
+	bool rows[] = { true,true,true,true,true };
+	bool cols[] = { true,true,true,true,true };
 	
+	for (int y = 0; y < 5; y++)
+		for (int x = 0; x < 5; x++)
+			if (card->marked[y][x] == false)
+			{
+				rows[x] = false;
+				cols[y] = false;
+			}
+			
+	for(int i = 0; i < 5; i++)
+		if (rows[i] == true || cols[i] == true)
+			return true;
 	
-	return Card();
+	return false;
 }
 
-int CalculateScore(const Card& card, const char& call)
+Card* FindFirstWinner(const std::vector<char>& calls, std::vector<Card*> cards)
 {
-	
-	return 0;
+	for(char call : calls)
+		for(int c = 0; c < cards.size(); c++)
+		{
+			for(int y = 0; y < 5; y++)
+				for(int x = 0; x < 5; x++)
+					if(call == cards[c]->points[y][x])
+						cards[c]->marked[y][x] = true;
+			
+			if(Bingo(cards[c]))
+			{
+				if (cards.size() > 1)
+				{
+					cards.erase(cards.begin() + c);
+					c--;
+				}
+				else
+				{
+					std::cout << "BINGO!" << CalculateScore(cards[c], call) << '\n';
+					return cards[c];
+				}
+			}
+		}
+		
+	std::cout << "winner not found!\n";
+	return nullptr;
+}
+
+int CalculateScore(Card* card, const char& call)
+{
+	int score = 0;
+	for(int y  = 0; y < 5; y++)
+		for(int x  = 0; x < 5; x++)
+			if (!card->marked[y][x])
+				score += card->points[y][x];
+	return score * call;
 }
