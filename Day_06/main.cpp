@@ -1,50 +1,49 @@
-#include <iostream>
-#include <vector>
+#include <stdio.h>
+#include <chrono>
 
+const char Data[] = {1, 1, 1, 1, 1, 1, 1, 4, 1, 2, 1, 1, 4, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 3, 1, 1, 2, 1, 2, 1, 3, 3, 4, 1, 4, 1, 1, 3, 1, 1, 5, 1, 1, 1, 1, 4, 1, 1, 5, 1, 1, 1, 4, 1, 5, 1, 1, 1, 3, 1, 1, 5, 3, 1, 1, 1, 1, 1, 4, 1, 1, 1, 1, 1, 2, 4, 1, 1, 1, 1, 4, 1, 2, 2, 1, 1, 1, 3, 1, 2, 5, 1, 4, 1, 1, 1, 3, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 4, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 5, 1, 1, 1, 4, 1, 1, 5, 1, 1, 5, 3, 3, 5, 3, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1, 5, 3, 1, 2, 1, 1, 1, 4, 1, 3, 1, 5, 1, 1, 2, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 4, 3, 2, 1, 2, 4, 1, 3, 1, 5, 1, 2, 1, 4, 1, 1, 1, 1, 1, 3, 1, 4, 1, 1, 1, 1, 3, 1, 3, 3, 1, 4, 3, 4, 1, 1, 1, 1, 5, 1, 3, 3, 2, 5, 3, 1, 1, 3, 1, 3, 1, 1, 1, 1, 4, 1, 1, 1, 1, 3, 1, 5, 1, 1, 1, 4, 4, 1, 1, 5, 5, 2, 4, 5, 1, 1, 1, 1, 5, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 5, 1, 1, 1, 1, 1, 1, 3, 1, 1, 2, 1, 1};
+//const char Data[] = {3, 4, 3, 1, 2};
+unsigned long long BreedingDays[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+unsigned int Today = 0;
 
-std::vector<char> GetFishies();
-unsigned long long BreedFishies(const int& days, const std::vector<char>& fishies);
+int main(int argc, char *argv[])
+{    
+	//get start time for operation(s)
+	auto startOp = std::chrono::high_resolution_clock::now();
 
-int main()
-{	
-	std::vector<char> fishies = GetFishies();
-	
-	std::cout << "After 256 days: "<<  BreedFishies( 256, fishies) <<" fishies remain.\n";
-	return 0;
-}
+    int iterator = 0, dayCount = 0;
+    char c;
+    if (argc < 2)
+        return -1;
+    while ((c = argv[1][iterator++]) != '\0')
+        dayCount = dayCount * 10 + (c - 48);
 
-std::vector<char> GetFishies()
-{
-	FILE* file;
-	errno_t err = fopen_s(&file, "input.txt", "rb");
-	std::vector<char> fishies = std::vector<char>();
+    int day = 0;
 
-	do fishies.push_back(getc(file) - 48);
-	while (getc(file) != EOF);
-	
-	fclose(file);
-	return fishies;
-}
+    for (int i = 0; i < sizeof(Data); i++)
+        BreedingDays[(Data[i])] += 1;
 
-unsigned long long BreedFishies(const int& days, const std::vector<char>& fishies)
-{
-	std::vector<int> newFishies = std::vector<int>();
-	unsigned long long sum = fishies.size();
-	
-	for(char fish : fishies)
-		for	(int remaining = days - fish; remaining > 0; remaining -= 7)
-			newFishies.push_back(remaining - 9);
-	
-	
-	while (newFishies.size() > 0)
-	{
-		sum++;
-		int fish = newFishies.at(newFishies.size()-1);
-		newFishies.pop_back();
-		for	(int remaining = fish; remaining > 0; remaining -= 7)
-			newFishies.push_back(remaining - 9);
-		if (sum % 1000000 == 0 && fish < 0)
-			std::cout << "At " << sum << ", quant: " <<newFishies.size() << '\n';
-	}
-	return sum;
+    unsigned long long temp;
+    while (day <= dayCount)
+    {
+        temp = BreedingDays[(day + 6) % 7];
+        BreedingDays[(day + 6) % 7] += BreedingDays[7];
+        BreedingDays[7] = BreedingDays[8];
+        BreedingDays[8] = temp;
+        day++;
+    }
+
+    unsigned long long total = 0;
+    for (size_t i = 0; i < 9; i++)
+    {
+        total += BreedingDays[i];
+    }
+    
+	//get end of operation time and get the difference
+	auto stopOp = std::chrono::high_resolution_clock::now();
+	unsigned long long elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(stopOp - startOp).count();
+    
+    printf("After %d days, fishcount %llu, after elapsed %llu\n", day-1, total, elapsed);
+
+    return 0;
 }
